@@ -11,6 +11,8 @@
 		C448893A2B5EF3AA00A38C55 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44889392B5EF3AA00A38C55 /* ViewController.swift */; };
 		C448893C2B5EF3AB00A38C55 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C448893B2B5EF3AB00A38C55 /* Assets.xcassets */; };
 		C448893F2B5EF3AB00A38C55 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C448893D2B5EF3AB00A38C55 /* Main.storyboard */; };
+		C448894A2B5EF41700A38C55 /* WebSocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44889492B5EF41700A38C55 /* WebSocketManager.swift */; };
+		C448894C2B5EF4B400A38C55 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C448894B2B5EF4B400A38C55 /* ViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +22,8 @@
 		C448893B2B5EF3AB00A38C55 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C448893E2B5EF3AB00A38C55 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		C44889402B5EF3AB00A38C55 /* NSURLSessionWebSocketTestBench.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NSURLSessionWebSocketTestBench.entitlements; sourceTree = "<group>"; };
+		C44889492B5EF41700A38C55 /* WebSocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketManager.swift; sourceTree = "<group>"; };
+		C448894B2B5EF4B400A38C55 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +61,8 @@
 				C448893B2B5EF3AB00A38C55 /* Assets.xcassets */,
 				C448893D2B5EF3AB00A38C55 /* Main.storyboard */,
 				C44889402B5EF3AB00A38C55 /* NSURLSessionWebSocketTestBench.entitlements */,
+				C44889492B5EF41700A38C55 /* WebSocketManager.swift */,
+				C448894B2B5EF4B400A38C55 /* ViewModel.swift */,
 			);
 			path = NSURLSessionWebSocketTestBench;
 			sourceTree = "<group>";
@@ -133,6 +139,8 @@
 			files = (
 				C448893A2B5EF3AA00A38C55 /* ViewController.swift in Sources */,
 				C44889382B5EF3AA00A38C55 /* AppDelegate.swift in Sources */,
+				C448894C2B5EF4B400A38C55 /* ViewModel.swift in Sources */,
+				C448894A2B5EF41700A38C55 /* WebSocketManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
