@@ -106,13 +106,14 @@ class ViewModel {
 		webSocketManager.delegate = self
 	}
 	
-    func saveProxySettings(overrideOsProxySettingsEnabled: Bool,
+    func saveProxySettings(overrideOsProxySettingsEnabled: Bool, host: String,
                            legacyHttpProxyEnabled: Bool, legacyHttpProxyHost: String, legacyHttpProxyPort: UInt16,
 						   legacyHttpsProxyEnabled: Bool, legacyHttpsProxyHost: String, legacyHttpsProxyPort: UInt16,
 						   legacySocksProxyEnabled: Bool, legacySocksProxyHost: String, legacySocksProxyPort: UInt16,
 						   newHttpProxyEnabled: Bool, newHttpProxyHost: String, newHttpProxyPort: UInt16,
 						   newSocksProxyEnabled: Bool, newSocksProxyHost: String, newSocksProxyPort: UInt16) {
         self.overrideOsProxySettingsCheckboxIsChecked = overrideOsProxySettingsEnabled
+        self.hostInputText = host
         
 		self.legacyHttpProxyEnabled = legacyHttpProxyEnabled
 		self.legacyHttpProxyHost = legacyHttpProxyHost

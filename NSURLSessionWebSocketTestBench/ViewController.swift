@@ -18,6 +18,7 @@ class ViewController: NSViewController {
 	@IBOutlet private var legacyTabItem: NSTabViewItem!
 	@IBOutlet private var newTabItem: NSTabViewItem!
 	@IBOutlet private var overrideOsProxySettingsCheckbox: NSButton!
+    @IBOutlet private var targetInput: NSTextField!
 	@IBOutlet private var legacyHttpProxyEnabledCheckbox: NSButton!
 	@IBOutlet private var legacyHttpProxyHostInput: NSTextField!
 	@IBOutlet private var legacyHttpProxyPortInput: NSTextField!
@@ -68,7 +69,7 @@ class ViewController: NSViewController {
 		let newHttpProxyPort = (newHttpProxyPortInput.formatter as! NumberFormatter).number(from: newHttpProxyPortInput.stringValue)!.uint16Value
 		let newSocksProxyPort = (newSocksProxyPortInput.formatter as! NumberFormatter).number(from: newSocksProxyPortInput.stringValue)!.uint16Value
 		
-        viewModel.saveProxySettings(overrideOsProxySettingsEnabled: overrideOsProxySettingsCheckbox.state == .on,
+        viewModel.saveProxySettings(overrideOsProxySettingsEnabled: overrideOsProxySettingsCheckbox.state == .on, host: targetInput.stringValue,
                                     legacyHttpProxyEnabled: legacyHttpProxyEnabledCheckbox.state == .on,   legacyHttpProxyHost: legacyHttpProxyHostInput.stringValue,   legacyHttpProxyPort: legacyHttpProxyPort,
 									legacyHttpsProxyEnabled: legacyHttpsProxyEnabledCheckbox.state == .on, legacyHttpsProxyHost: legacyHttpsProxyHostInput.stringValue, legacyHttpsProxyPort: legacyHttpsProxyPort,
 									legacySocksProxyEnabled: legacySocksProxyEnabledCheckbox.state == .on, legacySocksProxyHost: legacySocksProxyHostInput.stringValue, legacySocksProxyPort: legacySocksProxyPort,
@@ -106,6 +107,9 @@ class ViewController: NSViewController {
 		
 		// controls in general tab
 		overrideOsProxySettingsCheckbox.state = viewModel.overrideOsProxySettingsCheckboxIsChecked ? .on : .off
+        targetInput.isEnabled = viewModel.hostInputIsEnabled
+        targetInput.isHidden = !viewModel.hostInputIsVisible
+        targetInput.stringValue = viewModel.hostInputText
 		
 		// controls in legacy tab
 		legacyHttpProxyEnabledCheckbox.state = viewModel.legacyHttpProxyEnabled ? .on : .off

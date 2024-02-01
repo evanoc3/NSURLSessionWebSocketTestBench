@@ -116,113 +116,60 @@ class WebSocketManager: NSObject {
 		}
 	}
 	
-    private func getErrorDescription(error: NSError) -> String? {
-        if error.domain == NSURLErrorDomain {
-            /// See: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
-            switch error.code {
-            case NSURLErrorAppTransportSecurityRequiresSecureConnection:
-                return "NSURLErrorAppTransportSecurityRequiresSecureConnection"
-            case NSURLErrorBackgroundSessionInUseByAnotherProcess:
-                return "NSURLErrorBackgroundSessionInUseByAnotherProcess"
-            case NSURLErrorBackgroundSessionRequiresSharedContainer:
-                return "NSURLErrorBackgroundSessionRequiresSharedContainer"
-            case NSURLErrorBackgroundSessionWasDisconnected:
-                return "NSURLErrorBackgroundSessionWasDisconnected"
-            case NSURLErrorBadServerResponse:
-                return "NSURLErrorBadServerResponse"
-            case NSURLErrorBadURL:
-                return "NSURLErrorBadURL"
-            case NSURLErrorCallIsActive:
-                return "NSURLErrorCallIsActive"
-            case NSURLErrorCancelled:
-                return "NSURLErrorCancelled"
-            case NSURLErrorCannotCloseFile:
-                return "NSURLErrorCannotCloseFile"
-            case NSURLErrorCannotConnectToHost:
-                return "NSURLErrorCannotConnectToHost"
-            case NSURLErrorCannotCreateFile:
-                return "NSURLErrorCannotCreateFile"
-            case NSURLErrorCannotDecodeContentData:
-                return "NSURLErrorCannotDecodeContentData"
-            case NSURLErrorCannotDecodeRawData:
-                return "NSURLErrorCannotDecodeRawData"
-            case NSURLErrorCannotFindHost:
-                return "NSURLErrorCannotFindHost"
-            case NSURLErrorCannotLoadFromNetwork:
-                return "NSURLErrorCannotLoadFromNetwork"
-            case NSURLErrorCannotMoveFile:
-                return "NSURLErrorCannotMoveFile"
-            case NSURLErrorCannotOpenFile:
-                return "NSURLErrorCannotOpenFile"
-            case NSURLErrorCannotParseResponse:
-				return "NSURLErrorCannotParseResponse"
-			case NSURLErrorCannotRemoveFile:
-				return "NSURLErrorCannotRemoveFile"
-			case NSURLErrorCannotWriteToFile:
-				return "NSURLErrorCannotWriteToFile"
-			case NSURLErrorClientCertificateRejected:
-				return "NSURLErrorClientCertificateRejected"
-			case NSURLErrorClientCertificateRequired:
-				return "NSURLErrorClientCertificateRequired"
-			case NSURLErrorDataLengthExceedsMaximum:
-				return "NSURLErrorDataLengthExceedsMaximum"
-			case NSURLErrorDataNotAllowed:
-				return "NSURLErrorDataNotAllowed"
-			case NSURLErrorDNSLookupFailed:
-				return "NSURLErrorDNSLookupFailed"
-			case NSURLErrorDownloadDecodingFailedMidStream:
-				return "NSURLErrorDownloadDecodingFailedMidStream"
-			case NSURLErrorDownloadDecodingFailedToComplete:
-				return "NSURLErrorDownloadDecodingFailedToComplete"
-			case NSURLErrorFileDoesNotExist:
-				return "NSURLErrorFileDoesNotExist"
-			case NSURLErrorFileIsDirectory:
-				return "NSURLErrorFileIsDirectory"
-			case NSURLErrorFileOutsideSafeArea:
-				return "NSURLErrorFileOutsideSafeArea"
-			case NSURLErrorHTTPTooManyRedirects:
-				return "NSURLErrorHTTPTooManyRedirects"
-			case NSURLErrorInternationalRoamingOff:
-				return "NSURLErrorInternationalRoamingOff"
-			case NSURLErrorNetworkConnectionLost:
-				return "NSURLErrorNetworkConnectionLost"
-			case NSURLErrorNoPermissionsToReadFile:
-				return "NSURLErrorNoPermissionsToReadFile"
-			case NSURLErrorNotConnectedToInternet:
-				return "NSURLErrorNotConnectedToInternet"
-			case NSURLErrorRedirectToNonExistentLocation:
-				return "NSURLErrorRedirectToNonExistentLocation"
-			case NSURLErrorRequestBodyStreamExhausted:
-				return "NSURLErrorRequestBodyStreamExhausted"
-			case NSURLErrorResourceUnavailable:
-				return "NSURLErrorResourceUnavailable"
-			case NSURLErrorSecureConnectionFailed:
-				return "NSURLErrorSecureConnectionFailed"
-			case NSURLErrorServerCertificateHasBadDate:
-				return "NSURLErrorServerCertificateHasBadDate"
-			case NSURLErrorServerCertificateHasUnknownRoot:
-				return "NSURLErrorServerCertificateHasUnknownRoot"
-			case NSURLErrorServerCertificateNotYetValid:
-				return "NSURLErrorServerCertificateNotYetValid"
-			case NSURLErrorServerCertificateUntrusted:
-				return "NSURLErrorServerCertificateUntrusted"
-			case NSURLErrorTimedOut:
-				return "NSURLErrorTimedOut"
-			case NSURLErrorUnknown:
-				return "NSURLErrorUnknown"
-			case NSURLErrorUnsupportedURL:
-				return "NSURLErrorUnsupportedURL"
-			case NSURLErrorUserAuthenticationRequired:
-				return "NSURLErrorUserAuthenticationRequired"
-			case NSURLErrorUserCancelledAuthentication:
-				return "NSURLErrorUserCancelledAuthentication"
-			case NSURLErrorZeroByteResource:
-				return "NSURLErrorZeroByteResource"
-            default:
-                break
-            }
-        }
-        return nil
+    private func getErrorName(fromCode code: Int) -> String? {
+        let possibleErrorNames: [Int: String] = [
+            NSURLErrorAppTransportSecurityRequiresSecureConnection: "NSURLErrorAppTransportSecurityRequiresSecureConnection",
+            NSURLErrorBackgroundSessionInUseByAnotherProcess: "NSURLErrorBackgroundSessionInUseByAnotherProcess",
+            NSURLErrorBackgroundSessionRequiresSharedContainer: "NSURLErrorBackgroundSessionRequiresSharedContainer",
+            NSURLErrorBackgroundSessionWasDisconnected: "NSURLErrorBackgroundSessionWasDisconnected",
+            NSURLErrorBadServerResponse: "NSURLErrorBadServerResponse",
+            NSURLErrorBadURL: "NSURLErrorBadURL",
+            NSURLErrorCallIsActive: "NSURLErrorCallIsActive",
+            NSURLErrorCancelled: "NSURLErrorCancelled",
+            NSURLErrorCannotCloseFile: "NSURLErrorCannotCloseFile",
+            NSURLErrorCannotConnectToHost: "NSURLErrorCannotConnectToHost",
+            NSURLErrorCannotCreateFile: "NSURLErrorCannotCreateFile",
+            NSURLErrorCannotDecodeContentData: "NSURLErrorCannotDecodeContentData",
+            NSURLErrorCannotDecodeRawData: "NSURLErrorCannotDecodeRawData",
+            NSURLErrorCannotFindHost: "NSURLErrorCannotFindHost",
+            NSURLErrorCannotLoadFromNetwork: "NSURLErrorCannotLoadFromNetwork",
+            NSURLErrorCannotMoveFile: "NSURLErrorCannotMoveFile",
+            NSURLErrorCannotOpenFile: "NSURLErrorCannotOpenFile",
+            NSURLErrorCannotParseResponse: "NSURLErrorCannotParseResponse",
+            NSURLErrorCannotRemoveFile: "NSURLErrorCannotRemoveFile",
+            NSURLErrorCannotWriteToFile: "NSURLErrorCannotWriteToFile",
+            NSURLErrorClientCertificateRejected: "NSURLErrorClientCertificateRejected",
+            NSURLErrorClientCertificateRequired: "NSURLErrorClientCertificateRequired",
+            NSURLErrorDataLengthExceedsMaximum: "NSURLErrorDataLengthExceedsMaximum",
+            NSURLErrorDataNotAllowed: "NSURLErrorDataNotAllowed",
+            NSURLErrorDNSLookupFailed: "NSURLErrorDNSLookupFailed",
+            NSURLErrorDownloadDecodingFailedMidStream: "NSURLErrorDownloadDecodingFailedMidStream",
+            NSURLErrorDownloadDecodingFailedToComplete: "NSURLErrorDownloadDecodingFailedToComplete",
+            NSURLErrorFileDoesNotExist: "NSURLErrorFileDoesNotExist",
+            NSURLErrorFileIsDirectory: "NSURLErrorFileIsDirectory",
+            NSURLErrorFileOutsideSafeArea: "NSURLErrorFileOutsideSafeArea",
+            NSURLErrorHTTPTooManyRedirects: "NSURLErrorHTTPTooManyRedirects",
+            NSURLErrorInternationalRoamingOff: "NSURLErrorInternationalRoamingOff",
+            NSURLErrorNetworkConnectionLost: "NSURLErrorNetworkConnectionLost",
+            NSURLErrorNoPermissionsToReadFile: "NSURLErrorNoPermissionsToReadFile",
+            NSURLErrorNotConnectedToInternet: "NSURLErrorNotConnectedToInternet",
+            NSURLErrorRedirectToNonExistentLocation: "NSURLErrorRedirectToNonExistentLocation",
+            NSURLErrorRequestBodyStreamExhausted: "NSURLErrorRequestBodyStreamExhausted",
+            NSURLErrorResourceUnavailable: "NSURLErrorResourceUnavailable",
+            NSURLErrorSecureConnectionFailed: "NSURLErrorSecureConnectionFailed",
+            NSURLErrorServerCertificateHasBadDate: "NSURLErrorServerCertificateHasBadDate",
+            NSURLErrorServerCertificateHasUnknownRoot: "NSURLErrorServerCertificateHasUnknownRoot",
+            NSURLErrorServerCertificateNotYetValid: "NSURLErrorServerCertificateNotYetValid",
+            NSURLErrorServerCertificateUntrusted: "NSURLErrorServerCertificateUntrusted",
+            NSURLErrorTimedOut: "NSURLErrorTimedOut",
+            NSURLErrorUnknown: "NSURLErrorUnknown",
+            NSURLErrorUnsupportedURL: "NSURLErrorUnsupportedURL",
+            NSURLErrorUserAuthenticationRequired: "NSURLErrorUserAuthenticationRequired",
+            NSURLErrorUserCancelledAuthentication: "NSURLErrorUserCancelledAuthentication",
+            NSURLErrorZeroByteResource: "NSURLErrorZeroByteResource"
+        ]
+        
+        return possibleErrorNames.first(where: { $0.key == code })?.value
     }
     
 }
@@ -246,8 +193,10 @@ extension WebSocketManager: URLSessionWebSocketDelegate {
 extension WebSocketManager: URLSessionTaskDelegate {
 	
 	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard task.state != .completed || (error as? NSError)?.code != NSURLErrorCancelled else { return }
+        
         var errMsg = "URLSessionTaskDelegate.didCompleteWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
-        if let error, let errMsgDesc = getErrorDescription(error: error as NSError) {
+        if let error, let errMsgDesc = getErrorName(fromCode: (error as NSError).code) {
             errMsg += " a.k.a. \(errMsgDesc)"
         }
 		delegate?.webSocketEventDidHappen(message: errMsg)
@@ -259,8 +208,9 @@ extension WebSocketManager: URLSessionTaskDelegate {
 	}
 	
 	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+        guard error != nil else { return }
         var errMsg = "URLSessionTaskDelegate.didBecomeInvalidWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
-        if let error, let errMsgDesc = getErrorDescription(error: error as NSError) {
+        if let error, let errMsgDesc = getErrorName(fromCode: (error as NSError).code) {
             errMsg += " a.k.a. \(errMsgDesc)"
         }
 		delegate?.webSocketEventDidHappen(message: errMsg)

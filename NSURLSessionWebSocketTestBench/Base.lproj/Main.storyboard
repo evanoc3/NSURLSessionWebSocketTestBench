@@ -141,10 +141,32 @@
                                                         <font key="font" metaFont="system"/>
                                                     </buttonCell>
                                                 </button>
+                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="RJ7-qr-gCk">
+                                                    <rect key="frame" x="6" y="275" width="257" height="21"/>
+                                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Target" drawsBackground="YES" id="iO5-gM-DXg">
+                                                        <font key="font" metaFont="system"/>
+                                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    </textFieldCell>
+                                                </textField>
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MzI-rz-fGg">
+                                                    <rect key="frame" x="4" y="300" width="48" height="16"/>
+                                                    <textFieldCell key="cell" lineBreakMode="clipping" title="Target:" id="RDe-7p-ZYi">
+                                                        <font key="font" metaFont="systemMedium" size="13"/>
+                                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    </textFieldCell>
+                                                </textField>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="RJ7-qr-gCk" secondAttribute="trailing" constant="6" id="8uD-WK-abN"/>
+                                                <constraint firstItem="MzI-rz-fGg" firstAttribute="top" secondItem="ZnU-sz-NzI" secondAttribute="bottom" constant="22" id="DNC-iu-Kn2"/>
+                                                <constraint firstItem="RJ7-qr-gCk" firstAttribute="top" secondItem="MzI-rz-fGg" secondAttribute="bottom" constant="4" id="Lfu-aK-sLD"/>
                                                 <constraint firstItem="ZnU-sz-NzI" firstAttribute="leading" secondItem="enj-1u-oci" secondAttribute="leading" constant="6" id="Xdl-qO-qj2"/>
+                                                <constraint firstItem="RJ7-qr-gCk" firstAttribute="leading" secondItem="enj-1u-oci" secondAttribute="leading" constant="6" id="q7b-gn-PdB"/>
                                                 <constraint firstItem="ZnU-sz-NzI" firstAttribute="top" secondItem="enj-1u-oci" secondAttribute="top" constant="8" id="rSk-6c-FbN"/>
+                                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="MzI-rz-fGg" secondAttribute="trailing" constant="6" id="wSY-t8-Goo"/>
+                                                <constraint firstItem="MzI-rz-fGg" firstAttribute="leading" secondItem="enj-1u-oci" secondAttribute="leading" constant="6" id="zkj-jV-kQN"/>
                                             </constraints>
                                         </view>
                                     </tabViewItem>
@@ -561,6 +583,7 @@
                         <outlet property="saveProxySettingsButton" destination="W0g-qT-So0" id="f8H-iG-0fD"/>
                         <outlet property="sendMessageButton" destination="JsL-Ge-mry" id="BpC-fI-TRT"/>
                         <outlet property="tabView" destination="QHN-7v-POa" id="e9M-C5-rQy"/>
+                        <outlet property="targetInput" destination="RJ7-qr-gCk" id="5Bs-uy-CJA"/>
                         <outlet property="websocketTextView" destination="k97-Em-7uZ" id="B8s-LD-omp"/>
                     </connections>
                 </viewController>
