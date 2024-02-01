@@ -36,10 +36,10 @@ class WebSocketManager: NSObject {
 	
 	// MARK: Public API
 	
-	public func connect() {
+    public func connect(url: URL) {
 		let sessionConfiguration = buildSessionConfiguration()
 		urlSession = URLSession(configuration: sessionConfiguration, delegate: self, delegateQueue: OperationQueue())
-		webSocketTask = urlSession!.webSocketTask(with: URL(string: "wss://ws.postman-echo.com/raw")!)
+		webSocketTask = urlSession!.webSocketTask(with: url)
 		webSocketTask?.resume()
 		listenForMessage()
 	}
@@ -52,7 +52,7 @@ class WebSocketManager: NSObject {
 		urlSession = nil
 	}
 	
-	public func sendMessage(message: String) {
+    public func sendMessage(message: String) {
 		guard let webSocketTask else { return }
 		
 		webSocketTask.send(.string(message), completionHandler: { [weak self, message] (error) in

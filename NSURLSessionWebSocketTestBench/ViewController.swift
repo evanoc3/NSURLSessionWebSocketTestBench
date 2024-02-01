@@ -68,7 +68,8 @@ class ViewController: NSViewController {
 		let newHttpProxyPort = (newHttpProxyPortInput.formatter as! NumberFormatter).number(from: newHttpProxyPortInput.stringValue)!.uint16Value
 		let newSocksProxyPort = (newSocksProxyPortInput.formatter as! NumberFormatter).number(from: newSocksProxyPortInput.stringValue)!.uint16Value
 		
-		viewModel.saveProxySettings(legacyHttpProxyEnabled: legacyHttpProxyEnabledCheckbox.state == .on,   legacyHttpProxyHost: legacyHttpProxyHostInput.stringValue,   legacyHttpProxyPort: legacyHttpProxyPort,
+        viewModel.saveProxySettings(overrideOsProxySettingsEnabled: overrideOsProxySettingsCheckbox.state == .on,
+                                    legacyHttpProxyEnabled: legacyHttpProxyEnabledCheckbox.state == .on,   legacyHttpProxyHost: legacyHttpProxyHostInput.stringValue,   legacyHttpProxyPort: legacyHttpProxyPort,
 									legacyHttpsProxyEnabled: legacyHttpsProxyEnabledCheckbox.state == .on, legacyHttpsProxyHost: legacyHttpsProxyHostInput.stringValue, legacyHttpsProxyPort: legacyHttpsProxyPort,
 									legacySocksProxyEnabled: legacySocksProxyEnabledCheckbox.state == .on, legacySocksProxyHost: legacySocksProxyHostInput.stringValue, legacySocksProxyPort: legacySocksProxyPort,
 									newHttpProxyEnabled: newHttpProxyEnabledCheckbox.state == .on,         newHttpProxyHost: newHttpProxyHostInput.stringValue,         newHttpProxyPort: newHttpProxyPort,

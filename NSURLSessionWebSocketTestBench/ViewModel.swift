@@ -24,19 +24,22 @@ class ViewModel {
 	var generalProxySettingsTabIsVisible: Bool {
 		true
 	}
+    var hostInputIsVisible: Bool {
+        true
+    }
+    var hostInputIsEnabled: Bool {
+        true
+    }
+    private(set) var hostInputText: String = "wss://ws.postman-echo.com/raw"
 	var connectionProxyDictionaryTabIsVisible: Bool {
-		true
+        return overrideOsProxySettingsCheckboxIsChecked
 	}
 	var proxyConfigurationsTabIsVisible: Bool {
-		if #available(macOS 14.0, *) {
-			return true
-		}
-		else {
-			return false
-		}
+        guard #available(macOS 14.0, *) else { return false }
+        return overrideOsProxySettingsCheckboxIsChecked
 	}
-	private(set) var overrideOsProxySettingsCheckboxIsChecked: Bool = true
-	private(set) var legacyHttpProxyEnabled: Bool = true
+	private(set) var overrideOsProxySettingsCheckboxIsChecked = false
+	private(set) var legacyHttpProxyEnabled = true
 	var legacyHttpProxyHostInputEnabled: Bool {
 		return legacyHttpProxyEnabled
 	}
@@ -45,7 +48,7 @@ class ViewModel {
 		return legacyHttpProxyEnabled
 	}
 	private(set) var legacyHttpProxyPort: UInt16 = 9090
-	private(set) var legacyHttpsProxyEnabled: Bool = true
+	private(set) var legacyHttpsProxyEnabled = true
 	var legacyHttpsProxyHostInputEnabled: Bool {
 		return legacyHttpsProxyEnabled
 	}
@@ -54,7 +57,7 @@ class ViewModel {
 		return legacyHttpsProxyEnabled
 	}
 	private(set) var legacyHttpsProxyPort: UInt16 = 9090
-	private(set) var legacySocksProxyEnabled: Bool = true
+	private(set) var legacySocksProxyEnabled = true
 	var legacySocksProxyHostInputEnabled: Bool {
 		return legacySocksProxyEnabled
 	}
@@ -63,7 +66,7 @@ class ViewModel {
 		return legacySocksProxyEnabled
 	}
 	private(set) var legacySocksProxyPort: UInt16 = 8889
-	private(set) var newHttpProxyEnabled: Bool = true
+	private(set) var newHttpProxyEnabled = true
 	var newHttpProxyHostInputEnabled: Bool {
 		return newHttpProxyEnabled
 	}
@@ -72,7 +75,7 @@ class ViewModel {
 		return newHttpProxyEnabled
 	}
 	private(set) var newHttpProxyPort: UInt16 = 9090
-	private(set) var newSocksProxyEnabled: Bool = true
+	private(set) var newSocksProxyEnabled = true
 	var newSocksProxyHostInputEnabled: Bool {
 		return legacySocksProxyEnabled
 	}
@@ -103,11 +106,14 @@ class ViewModel {
 		webSocketManager.delegate = self
 	}
 	
-	func saveProxySettings(legacyHttpProxyEnabled: Bool, legacyHttpProxyHost: String, legacyHttpProxyPort: UInt16,
+    func saveProxySettings(overrideOsProxySettingsEnabled: Bool,
+                           legacyHttpProxyEnabled: Bool, legacyHttpProxyHost: String, legacyHttpProxyPort: UInt16,
 						   legacyHttpsProxyEnabled: Bool, legacyHttpsProxyHost: String, legacyHttpsProxyPort: UInt16,
 						   legacySocksProxyEnabled: Bool, legacySocksProxyHost: String, legacySocksProxyPort: UInt16,
 						   newHttpProxyEnabled: Bool, newHttpProxyHost: String, newHttpProxyPort: UInt16,
 						   newSocksProxyEnabled: Bool, newSocksProxyHost: String, newSocksProxyPort: UInt16) {
+        self.overrideOsProxySettingsCheckboxIsChecked = overrideOsProxySettingsEnabled
+        
 		self.legacyHttpProxyEnabled = legacyHttpProxyEnabled
 		self.legacyHttpProxyHost = legacyHttpProxyHost
 		self.legacyHttpProxyPort = legacyHttpProxyPort
@@ -133,10 +139,9 @@ class ViewModel {
 	}
 	
 	func buildConnectionProxyDictionary() -> [AnyHashable: Any]? {
-		if !legacySocksProxyEnabled && !legacyHttpProxyEnabled && !legacyHttpsProxyEnabled {
-			return nil
-		}
-		
+		guard overrideOsProxySettingsCheckboxIsChecked else { return nil }
+        guard legacySocksProxyEnabled || legacyHttpProxyEnabled || legacyHttpsProxyEnabled else { return nil }
+
 		return [
 			// kCFProxyTypeKey: "",
 			
@@ -155,9 +160,8 @@ class ViewModel {
 	}
 	
 	func buildProxyConfigurations() -> [ProxyConfiguration]? {
-		if !newSocksProxyEnabled && !newHttpProxyEnabled {
-			return nil
-		}
+        guard overrideOsProxySettingsCheckboxIsChecked else { return nil }
+        guard newSocksProxyEnabled || newHttpProxyEnabled else { return nil }
 		
 		var proxyConfigurations: [ProxyConfiguration] = []
 		
@@ -178,7 +182,11 @@ class ViewModel {
 	
 	func connectButtonPressed() {
 		if !webSocketManager.isConnected {
-			webSocketManager.connect()
+            guard let url = URL(string: hostInputText) else {
+                webSocketEventDidHappen(message: "Error: invalid URL \"\(hostInputText)\"")
+                return
+            }
+            webSocketManager.connect(url: url)
 		}
 		else {
 			webSocketManager.disconnect()
@@ -198,7 +206,17 @@ extension ViewModel: WebSocketManagerDelegate {
 	func webSocketEventDidHappen(message: String) {
 		DispatchQueue.main.async(execute: { [weak self, message] in
 			guard let self else { return }
-			self.textViewText += "\n\(message)\n"
+            
+            var printLine = message
+            
+            if !printLine.hasPrefix("\n") {
+                printLine = "\n\(printLine)"
+            }
+            if !printLine.hasSuffix("\n") {
+                printLine = "\(printLine)\n"
+            }
+            
+			self.textViewText += printLine
 			self.delegate?.textViewTextChanged()
 		})
 	}
