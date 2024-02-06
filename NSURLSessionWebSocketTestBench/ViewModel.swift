@@ -90,7 +90,7 @@ class ViewModel {
 	var connectButtonTitle: String {
 		webSocketManager.isConnected ? "Disconnect" : "Connect"
 	}
-	private(set) var textViewText: String = "WebSocket traffic will appear here..."
+	private(set) var textViewText: String = "WebSocket traffic will appear here...\n"
 	var messageInputIsEnabled: Bool {
 		webSocketManager.isConnected
 	}

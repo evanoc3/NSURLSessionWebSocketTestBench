@@ -115,8 +115,59 @@ class WebSocketManager: NSObject {
 			}
 		}
 	}
+
+}
+
+
+// MARK: - URLSessionWebSocketDelegate extension
+extension WebSocketManager: URLSessionWebSocketDelegate {
 	
-    private func getErrorName(fromCode code: Int) -> String? {
+	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocolStr: String?) {
+		delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didOpenWithProtocol protocolStr:\(protocolStr != nil ? "\"\(protocolStr!)\"" : "nil")")
+	}
+	
+	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+		delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didCloseWith closeCode:\(closeCode)")
+	}
+	
+}
+
+
+// MARK: - URLSessionTaskDelegate extension
+extension WebSocketManager: URLSessionTaskDelegate {
+	
+	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard task.state != .completed || (error as? NSError)?.code != NSURLErrorCancelled else { return }
+        
+        var errMsg = "URLSessionTaskDelegate.didCompleteWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
+        if let error, let errMsgDesc = WebSocketManagerUtils.getErrorName(fromCode: (error as NSError).code) {
+            errMsg += " a.k.a. \(errMsgDesc)"
+        }
+		delegate?.webSocketEventDidHappen(message: errMsg)
+	}
+
+	func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+		delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.didReceive(challenge:)")
+		return (.performDefaultHandling, nil)
+	}
+	
+	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+        guard error != nil else { return }
+        var errMsg = "URLSessionTaskDelegate.didBecomeInvalidWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
+        if let error, let errMsgDesc = WebSocketManagerUtils.getErrorName(fromCode: (error as NSError).code) {
+            errMsg += " a.k.a. \(errMsgDesc)"
+        }
+		delegate?.webSocketEventDidHappen(message: errMsg)
+	}
+	
+}
+
+
+// MARK: - WebSocketManagerUtils struct
+struct WebSocketManagerUtils {
+    
+    static func getErrorName(fromCode code: Int) -> String? {
+        // See: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
         let possibleErrorNames: [Int: String] = [
             NSURLErrorAppTransportSecurityRequiresSecureConnection: "NSURLErrorAppTransportSecurityRequiresSecureConnection",
             NSURLErrorBackgroundSessionInUseByAnotherProcess: "NSURLErrorBackgroundSessionInUseByAnotherProcess",
@@ -172,48 +223,4 @@ class WebSocketManager: NSObject {
         return possibleErrorNames.first(where: { $0.key == code })?.value
     }
     
-}
-
-
-// MARK: - URLSessionWebSocketDelegate extension
-extension WebSocketManager: URLSessionWebSocketDelegate {
-	
-	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocolStr: String?) {
-		delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didOpenWithProtocol protocolStr:\(protocolStr != nil ? "\"\(protocolStr!)\"" : "nil")")
-	}
-	
-	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-		delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didCloseWith closeCode:\(closeCode)")
-	}
-	
-}
-
-
-// MARK: - URLSessionTaskDelegate extension
-extension WebSocketManager: URLSessionTaskDelegate {
-	
-	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard task.state != .completed || (error as? NSError)?.code != NSURLErrorCancelled else { return }
-        
-        var errMsg = "URLSessionTaskDelegate.didCompleteWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
-        if let error, let errMsgDesc = getErrorName(fromCode: (error as NSError).code) {
-            errMsg += " a.k.a. \(errMsgDesc)"
-        }
-		delegate?.webSocketEventDidHappen(message: errMsg)
-	}
-	
-	func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
-		delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.didReceive(challenge:)")
-		return (.performDefaultHandling, nil)
-	}
-	
-	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        guard error != nil else { return }
-        var errMsg = "URLSessionTaskDelegate.didBecomeInvalidWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
-        if let error, let errMsgDesc = getErrorName(fromCode: (error as NSError).code) {
-            errMsg += " a.k.a. \(errMsgDesc)"
-        }
-		delegate?.webSocketEventDidHappen(message: errMsg)
-	}
-	
 }
