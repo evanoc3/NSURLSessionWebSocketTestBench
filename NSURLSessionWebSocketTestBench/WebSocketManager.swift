@@ -96,7 +96,7 @@ class WebSocketManager: NSObject {
 				
 				switch result {
 					case .failure(let error):
-						self.delegate?.webSocketEventDidHappen(message: "listen.failure: \(error.localizedDescription)")
+						self.delegate?.webSocketEventDidHappen(message: "WebSocketManager.listenForMessage()\nerror = \"\(error.localizedDescription)\"")
 					
 					case .success(let message):
 						switch message {
@@ -119,108 +119,93 @@ class WebSocketManager: NSObject {
 }
 
 
-// MARK: - URLSessionWebSocketDelegate extension
-extension WebSocketManager: URLSessionWebSocketDelegate {
-	
-	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocolStr: String?) {
-		delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didOpenWithProtocol protocolStr:\(protocolStr != nil ? "\"\(protocolStr!)\"" : "nil")")
-	}
-	
-	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-		delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didCloseWith closeCode:\(closeCode)")
-	}
-	
+// MARK: - URLSessionDelegate extension
+extension WebSocketManager: URLSessionDelegate {
+    
+    func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+        var errMsg = "URLSessionDelegate.\(#function)\nerror = \(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
+        if let error, let errMsgDesc = Utils.getErrorName(fromCode: (error as NSError).code) {
+            errMsg += " (a.k.a. \(errMsgDesc))"
+        }
+        delegate?.webSocketEventDidHappen(message: errMsg)
+    }
+    
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionDelegate.\(#function)")
+        return (.performDefaultHandling, nil)
+    }
+    
 }
 
 
 // MARK: - URLSessionTaskDelegate extension
 extension WebSocketManager: URLSessionTaskDelegate {
 	
+    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, willBeginDelayedRequest request: URLRequest) async -> (URLSession.DelayedRequestDisposition, URLRequest?)  {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+        return (.continueLoading, request)
+    }
+    
+    func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest) async -> URLRequest? {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+        return request
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+        return (.performDefaultHandling, nil)
+    }
+    
+    func urlSession(_ session: URLSession, needNewBodyStreamForTask task: URLSessionTask) async -> InputStream? {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+        return nil
+    }
+    
+    func urlSession(_ session: URLSession, needNewBodyStreamForTask task: URLSessionTask, from offset: Int64) async -> InputStream? {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+        return nil
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didReceiveInformationalResponse response: HTTPURLResponse) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.\(#function)")
+    }
+    
 	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard task.state != .completed || (error as? NSError)?.code != NSURLErrorCancelled else { return }
-        
-        var errMsg = "URLSessionTaskDelegate.didCompleteWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
-        if let error, let errMsgDesc = WebSocketManagerUtils.getErrorName(fromCode: (error as NSError).code) {
+        var errMsg = "URLSessionTaskDelegate.\(#function)\nerror = \(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
+        if let error, let errMsgDesc = Utils.getErrorName(fromCode: (error as NSError).code) {
             errMsg += " a.k.a. \(errMsgDesc)"
         }
 		delegate?.webSocketEventDidHappen(message: errMsg)
 	}
 
-	func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
-		delegate?.webSocketEventDidHappen(message: "URLSessionTaskDelegate.didReceive(challenge:)")
-		return (.performDefaultHandling, nil)
-	}
-	
-	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        guard error != nil else { return }
-        var errMsg = "URLSessionTaskDelegate.didBecomeInvalidWithError error:\(error != nil ? "\"\(error!.localizedDescription)\"" : "nil")"
-        if let error, let errMsgDesc = WebSocketManagerUtils.getErrorName(fromCode: (error as NSError).code) {
-            errMsg += " a.k.a. \(errMsgDesc)"
-        }
-		delegate?.webSocketEventDidHappen(message: errMsg)
-	}
-	
 }
 
 
-// MARK: - WebSocketManagerUtils struct
-struct WebSocketManagerUtils {
+// MARK: - URLSessionWebSocketDelegate extension
+extension WebSocketManager: URLSessionWebSocketDelegate {
     
-    static func getErrorName(fromCode code: Int) -> String? {
-        // See: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
-        let possibleErrorNames: [Int: String] = [
-            NSURLErrorAppTransportSecurityRequiresSecureConnection: "NSURLErrorAppTransportSecurityRequiresSecureConnection",
-            NSURLErrorBackgroundSessionInUseByAnotherProcess: "NSURLErrorBackgroundSessionInUseByAnotherProcess",
-            NSURLErrorBackgroundSessionRequiresSharedContainer: "NSURLErrorBackgroundSessionRequiresSharedContainer",
-            NSURLErrorBackgroundSessionWasDisconnected: "NSURLErrorBackgroundSessionWasDisconnected",
-            NSURLErrorBadServerResponse: "NSURLErrorBadServerResponse",
-            NSURLErrorBadURL: "NSURLErrorBadURL",
-            NSURLErrorCallIsActive: "NSURLErrorCallIsActive",
-            NSURLErrorCancelled: "NSURLErrorCancelled",
-            NSURLErrorCannotCloseFile: "NSURLErrorCannotCloseFile",
-            NSURLErrorCannotConnectToHost: "NSURLErrorCannotConnectToHost",
-            NSURLErrorCannotCreateFile: "NSURLErrorCannotCreateFile",
-            NSURLErrorCannotDecodeContentData: "NSURLErrorCannotDecodeContentData",
-            NSURLErrorCannotDecodeRawData: "NSURLErrorCannotDecodeRawData",
-            NSURLErrorCannotFindHost: "NSURLErrorCannotFindHost",
-            NSURLErrorCannotLoadFromNetwork: "NSURLErrorCannotLoadFromNetwork",
-            NSURLErrorCannotMoveFile: "NSURLErrorCannotMoveFile",
-            NSURLErrorCannotOpenFile: "NSURLErrorCannotOpenFile",
-            NSURLErrorCannotParseResponse: "NSURLErrorCannotParseResponse",
-            NSURLErrorCannotRemoveFile: "NSURLErrorCannotRemoveFile",
-            NSURLErrorCannotWriteToFile: "NSURLErrorCannotWriteToFile",
-            NSURLErrorClientCertificateRejected: "NSURLErrorClientCertificateRejected",
-            NSURLErrorClientCertificateRequired: "NSURLErrorClientCertificateRequired",
-            NSURLErrorDataLengthExceedsMaximum: "NSURLErrorDataLengthExceedsMaximum",
-            NSURLErrorDataNotAllowed: "NSURLErrorDataNotAllowed",
-            NSURLErrorDNSLookupFailed: "NSURLErrorDNSLookupFailed",
-            NSURLErrorDownloadDecodingFailedMidStream: "NSURLErrorDownloadDecodingFailedMidStream",
-            NSURLErrorDownloadDecodingFailedToComplete: "NSURLErrorDownloadDecodingFailedToComplete",
-            NSURLErrorFileDoesNotExist: "NSURLErrorFileDoesNotExist",
-            NSURLErrorFileIsDirectory: "NSURLErrorFileIsDirectory",
-            NSURLErrorFileOutsideSafeArea: "NSURLErrorFileOutsideSafeArea",
-            NSURLErrorHTTPTooManyRedirects: "NSURLErrorHTTPTooManyRedirects",
-            NSURLErrorInternationalRoamingOff: "NSURLErrorInternationalRoamingOff",
-            NSURLErrorNetworkConnectionLost: "NSURLErrorNetworkConnectionLost",
-            NSURLErrorNoPermissionsToReadFile: "NSURLErrorNoPermissionsToReadFile",
-            NSURLErrorNotConnectedToInternet: "NSURLErrorNotConnectedToInternet",
-            NSURLErrorRedirectToNonExistentLocation: "NSURLErrorRedirectToNonExistentLocation",
-            NSURLErrorRequestBodyStreamExhausted: "NSURLErrorRequestBodyStreamExhausted",
-            NSURLErrorResourceUnavailable: "NSURLErrorResourceUnavailable",
-            NSURLErrorSecureConnectionFailed: "NSURLErrorSecureConnectionFailed",
-            NSURLErrorServerCertificateHasBadDate: "NSURLErrorServerCertificateHasBadDate",
-            NSURLErrorServerCertificateHasUnknownRoot: "NSURLErrorServerCertificateHasUnknownRoot",
-            NSURLErrorServerCertificateNotYetValid: "NSURLErrorServerCertificateNotYetValid",
-            NSURLErrorServerCertificateUntrusted: "NSURLErrorServerCertificateUntrusted",
-            NSURLErrorTimedOut: "NSURLErrorTimedOut",
-            NSURLErrorUnknown: "NSURLErrorUnknown",
-            NSURLErrorUnsupportedURL: "NSURLErrorUnsupportedURL",
-            NSURLErrorUserAuthenticationRequired: "NSURLErrorUserAuthenticationRequired",
-            NSURLErrorUserCancelledAuthentication: "NSURLErrorUserCancelledAuthentication",
-            NSURLErrorZeroByteResource: "NSURLErrorZeroByteResource"
-        ]
-        
-        return possibleErrorNames.first(where: { $0.key == code })?.value
+    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocolStr: String?) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didOpenWithProtocol protocolStr:\(protocolStr != nil ? "\"\(protocolStr!)\"" : "nil")")
+    }
+    
+    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        delegate?.webSocketEventDidHappen(message: "URLSessionWebSocketDelegate.didCloseWith closeCode:\(closeCode)")
     }
     
 }
