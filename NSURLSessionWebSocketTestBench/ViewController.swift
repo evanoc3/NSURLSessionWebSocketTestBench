@@ -14,27 +14,24 @@ class ViewController: NSViewController {
 	// MARK: Outlets
 	
 	@IBOutlet private var tabView: NSTabView!
-	@IBOutlet private var generalTabItem: NSTabViewItem!
-	@IBOutlet private var legacyTabItem: NSTabViewItem!
-	@IBOutlet private var newTabItem: NSTabViewItem!
+	@IBOutlet private var proxyTabItem: NSTabViewItem!
 	@IBOutlet private var overrideOsProxySettingsCheckbox: NSButton!
     @IBOutlet private var targetInput: NSTextField!
-	@IBOutlet private var legacyHttpProxyEnabledCheckbox: NSButton!
 	@IBOutlet private var legacyHttpProxyHostInput: NSTextField!
 	@IBOutlet private var legacyHttpProxyPortInput: NSTextField!
-	@IBOutlet private var legacyHttpsProxyEnabledCheckbox: NSButton!
 	@IBOutlet private var legacyHttpsProxyHostInput: NSTextField!
 	@IBOutlet private var legacyHttpsProxyPortInput: NSTextField!
-	@IBOutlet private var legacySocksProxyEnabledCheckbox: NSButton!
 	@IBOutlet private var legacySocksProxyHostInput: NSTextField!
 	@IBOutlet private var legacySocksProxyPortInput: NSTextField!
-	@IBOutlet private var newHttpProxyEnabledCheckbox: NSButton!
 	@IBOutlet private var newHttpProxyHostInput: NSTextField!
 	@IBOutlet private var newHttpProxyPortInput: NSTextField!
-	@IBOutlet private var newSocksProxyEnabledCheckbox: NSButton!
 	@IBOutlet private var newSocksProxyHostInput: NSTextField!
 	@IBOutlet private var newSocksProxyPortInput: NSTextField!
+    @IBOutlet private var authenticationMethodPopupButton: NSPopUpButton!
+    @IBOutlet private var credentialsUsernameInput: NSTextField!
+    @IBOutlet private var credentialsPasswordInput: NSTextField!
 	@IBOutlet private var websocketTextView: NSTextView!
+    @IBOutlet private var clearTextButton: NSButton!
 	@IBOutlet private var saveProxySettingsButton: NSButton!
 	@IBOutlet private var connectButton: NSButton!
 	@IBOutlet private var messageInput: NSTextField!
@@ -63,18 +60,20 @@ class ViewController: NSViewController {
 	// MARK: Actions
 	
 	@IBAction func saveProxySettingsButtonAction(_ sender: NSButton) {
-		let legacyHttpProxyPort = (legacyHttpProxyPortInput.formatter as! NumberFormatter).number(from: legacyHttpProxyPortInput.stringValue)!.uint16Value
-		let legacyHttpsProxyPort = (legacyHttpsProxyPortInput.formatter as! NumberFormatter).number(from: legacyHttpsProxyPortInput.stringValue)!.uint16Value
-		let legacySocksProxyPort = (legacySocksProxyPortInput.formatter as! NumberFormatter).number(from: legacySocksProxyPortInput.stringValue)!.uint16Value
-		let newHttpProxyPort = (newHttpProxyPortInput.formatter as! NumberFormatter).number(from: newHttpProxyPortInput.stringValue)!.uint16Value
-		let newSocksProxyPort = (newSocksProxyPortInput.formatter as! NumberFormatter).number(from: newSocksProxyPortInput.stringValue)!.uint16Value
+        let legacyHttpProxyPort = legacyHttpProxyPortInput.stringValue.isEmpty ? nil : (legacyHttpProxyPortInput.formatter as! NumberFormatter).number(from: legacyHttpProxyPortInput.stringValue)?.uint16Value
+        let legacyHttpsProxyPort = legacyHttpsProxyPortInput.stringValue.isEmpty ? nil : (legacyHttpsProxyPortInput.formatter as! NumberFormatter).number(from: legacyHttpsProxyPortInput.stringValue)?.uint16Value
+        let legacySocksProxyPort = legacySocksProxyPortInput.stringValue.isEmpty ? nil : (legacySocksProxyPortInput.formatter as! NumberFormatter).number(from: legacySocksProxyPortInput.stringValue)?.uint16Value
+        let newHttpProxyPort = newHttpProxyPortInput.stringValue.isEmpty ? nil : (newHttpProxyPortInput.formatter as! NumberFormatter).number(from: newHttpProxyPortInput.stringValue)?.uint16Value
+        let newSocksProxyPort = newSocksProxyPortInput.stringValue.isEmpty ? nil : (newSocksProxyPortInput.formatter as! NumberFormatter).number(from: newSocksProxyPortInput.stringValue)?.uint16Value
+        let authenticationMethod = authenticationMethodPopupButton.titleOfSelectedItem == "None" ? nil : authenticationMethodPopupButton.titleOfSelectedItem
 		
         viewModel.saveProxySettings(overrideOsProxySettingsEnabled: overrideOsProxySettingsCheckbox.state == .on, host: targetInput.stringValue,
-                                    legacyHttpProxyEnabled: legacyHttpProxyEnabledCheckbox.state == .on,   legacyHttpProxyHost: legacyHttpProxyHostInput.stringValue,   legacyHttpProxyPort: legacyHttpProxyPort,
-									legacyHttpsProxyEnabled: legacyHttpsProxyEnabledCheckbox.state == .on, legacyHttpsProxyHost: legacyHttpsProxyHostInput.stringValue, legacyHttpsProxyPort: legacyHttpsProxyPort,
-									legacySocksProxyEnabled: legacySocksProxyEnabledCheckbox.state == .on, legacySocksProxyHost: legacySocksProxyHostInput.stringValue, legacySocksProxyPort: legacySocksProxyPort,
-									newHttpProxyEnabled: newHttpProxyEnabledCheckbox.state == .on,         newHttpProxyHost: newHttpProxyHostInput.stringValue,         newHttpProxyPort: newHttpProxyPort,
-									newSocksProxyEnabled: newSocksProxyEnabledCheckbox.state == .on,       newSocksProxyHost: newSocksProxyHostInput.stringValue,       newSocksProxyPort: newSocksProxyPort)
+                                    legacyHttpProxyHost: legacyHttpProxyHostInput.stringValue,   legacyHttpProxyPort: legacyHttpProxyPort,
+									legacyHttpsProxyHost: legacyHttpsProxyHostInput.stringValue, legacyHttpsProxyPort: legacyHttpsProxyPort,
+									legacySocksProxyHost: legacySocksProxyHostInput.stringValue, legacySocksProxyPort: legacySocksProxyPort,
+									newHttpProxyHost: newHttpProxyHostInput.stringValue,         newHttpProxyPort: newHttpProxyPort,
+									newSocksProxyHost: newSocksProxyHostInput.stringValue,       newSocksProxyPort: newSocksProxyPort,
+                                    authenticationMethod: "None",                  credentialsUsername: "", credentialsPassword: "")
 		setupUi()
 	}
 	
@@ -83,6 +82,10 @@ class ViewController: NSViewController {
 		setupUi()
 	}
 	
+    @IBAction func clearButtonAction(_ sender: NSButton) {
+        viewModel.clearButtonPressed()
+    }
+    
 	@IBAction func sendMessage(_ sender: Any?) {
 		viewModel.sendMessage(message: messageInput.stringValue)
 		messageInput.stringValue = ""
@@ -92,60 +95,27 @@ class ViewController: NSViewController {
 	// MARK: Private Methods
 	
 	private func setupUi() {
-		// tabView and tabViewItems
-		var visibleTabViews: [NSTabViewItem] = []
-		if viewModel.generalProxySettingsTabIsVisible {
-			visibleTabViews.append(generalTabItem)
-		}
-		if viewModel.connectionProxyDictionaryTabIsVisible {
-			visibleTabViews.append(legacyTabItem)
-		}
-		if viewModel.proxyConfigurationsTabIsVisible {
-			visibleTabViews.append(newTabItem)
-		}
-		tabView.tabViewItems = visibleTabViews
-		
 		// controls in general tab
 		overrideOsProxySettingsCheckbox.state = viewModel.overrideOsProxySettingsCheckboxIsChecked ? .on : .off
-        targetInput.isEnabled = viewModel.hostInputIsEnabled
-        targetInput.isHidden = !viewModel.hostInputIsVisible
         targetInput.stringValue = viewModel.hostInputText
 		
-		// controls in legacy tab
-		legacyHttpProxyEnabledCheckbox.state = viewModel.legacyHttpProxyEnabled ? .on : .off
-		legacyHttpProxyHostInput.isEnabled = viewModel.legacyHttpProxyHostInputEnabled
+		// controls in proxy tab
 		legacyHttpProxyHostInput.stringValue = viewModel.legacyHttpProxyHost
-		legacyHttpProxyPortInput.isEnabled = viewModel.legacyHttpProxyPortInputEnabled
 		legacyHttpProxyPortInput.stringValue = legacyHttpProxyPortInput.formatter!.string(for: viewModel.legacyHttpProxyPort) ?? ""
 		
-		legacyHttpsProxyEnabledCheckbox.state = viewModel.legacyHttpsProxyEnabled ? .on : .off
-		legacyHttpsProxyHostInput.isEnabled = viewModel.legacyHttpsProxyHostInputEnabled
 		legacyHttpsProxyHostInput.stringValue = viewModel.legacyHttpsProxyHost
-		legacyHttpsProxyPortInput.isEnabled = viewModel.legacyHttpsProxyPortInputEnabled
 		legacyHttpsProxyPortInput.stringValue = legacyHttpsProxyPortInput.formatter!.string(for: viewModel.legacyHttpsProxyPort) ?? ""
-		legacySocksProxyEnabledCheckbox.state = viewModel.legacySocksProxyEnabled ? .on : .off
-		legacySocksProxyHostInput.isEnabled = viewModel.legacySocksProxyHostInputEnabled
 		legacySocksProxyHostInput.stringValue = viewModel.legacySocksProxyHost
-		legacySocksProxyPortInput.isEnabled = viewModel.legacySocksProxyPortInputEnabled
 		legacySocksProxyPortInput.stringValue = legacySocksProxyPortInput.formatter!.string(for: viewModel.legacySocksProxyPort) ?? ""
 		
-		// controls in new tab
-		newHttpProxyEnabledCheckbox.state = viewModel.newHttpProxyEnabled ? .on : .off
-		newHttpProxyHostInput.isEnabled = viewModel.newHttpProxyEnabled
 		newHttpProxyHostInput.stringValue = viewModel.newHttpProxyHost
-		newHttpProxyPortInput.isEnabled = viewModel.newHttpProxyPortInputEnabled
 		newHttpProxyPortInput.stringValue = newHttpProxyPortInput.formatter!.string(for: viewModel.newHttpProxyPort) ?? ""
-		newSocksProxyEnabledCheckbox.state = viewModel.newSocksProxyEnabled ? .on : .off
-		newSocksProxyHostInput.isEnabled = viewModel.newSocksProxyEnabled
 		newSocksProxyHostInput.stringValue = viewModel.newSocksProxyHost
-		newSocksProxyPortInput.isEnabled = viewModel.newSocksProxyPortInputEnabled
 		newSocksProxyPortInput.stringValue = newSocksProxyPortInput.formatter!.string(for: viewModel.newSocksProxyPort) ?? ""
 		
-		// save proxy settings & connect buttons
-		saveProxySettingsButton.title = viewModel.saveProxySettingsButtonTitle
-		connectButton.title = viewModel.connectButtonTitle
-		
 		// message input and send button
+        clearTextButton.isHidden = !viewModel.clearButtonIsVisible
+        connectButton.title = viewModel.connectButtonText
 		messageInput.isEnabled = viewModel.messageInputIsEnabled
 		sendMessageButton.isEnabled = viewModel.sendMessageButtonIsEnabled && !messageInput.stringValue.isEmpty
 	}
@@ -161,6 +131,8 @@ extension ViewController: ViewModelDelegate {
 	}
 	
 	func textViewTextChanged() {
+        clearTextButton.isHidden = !viewModel.clearButtonIsVisible
+        
 		websocketTextView.string = viewModel.textViewText
 	}
 	

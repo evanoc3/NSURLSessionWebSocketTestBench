@@ -9,6 +9,9 @@ import Foundation
 import Network
 
 
+fileprivate let textViewPlaceholderText = "WebSocket traffic will appear here...\n"
+
+
 // MARK: - ViewModelDelegate protocol
 protocol ViewModelDelegate: AnyObject {
 	func proxySettingsUpdated()
@@ -20,17 +23,8 @@ protocol ViewModelDelegate: AnyObject {
 class ViewModel {
 	
 	// MARK: Properties
-	
-	var generalProxySettingsTabIsVisible: Bool {
-		true
-	}
-    var hostInputIsVisible: Bool {
-        true
-    }
-    var hostInputIsEnabled: Bool {
-        true
-    }
-    private(set) var hostInputText: String = "wss://ws.postman-echo.com/raw"
+    
+    private(set) var hostInputText = "wss://ws.postman-echo.com/raw"
 	var connectionProxyDictionaryTabIsVisible: Bool {
         return overrideOsProxySettingsCheckboxIsChecked
 	}
@@ -39,58 +33,26 @@ class ViewModel {
         return overrideOsProxySettingsCheckboxIsChecked
 	}
 	private(set) var overrideOsProxySettingsCheckboxIsChecked = false
-	private(set) var legacyHttpProxyEnabled = true
-	var legacyHttpProxyHostInputEnabled: Bool {
-		return legacyHttpProxyEnabled
-	}
-	private(set) var legacyHttpProxyHost: String = "127.0.0.1"
-	var legacyHttpProxyPortInputEnabled: Bool {
-		return legacyHttpProxyEnabled
-	}
-	private(set) var legacyHttpProxyPort: UInt16 = 9090
-	private(set) var legacyHttpsProxyEnabled = true
-	var legacyHttpsProxyHostInputEnabled: Bool {
-		return legacyHttpsProxyEnabled
-	}
-	private(set) var legacyHttpsProxyHost: String = "127.0.0.1"
-	var legacyHttpsProxyPortInputEnabled: Bool {
-		return legacyHttpsProxyEnabled
-	}
-	private(set) var legacyHttpsProxyPort: UInt16 = 9090
-	private(set) var legacySocksProxyEnabled = true
-	var legacySocksProxyHostInputEnabled: Bool {
-		return legacySocksProxyEnabled
-	}
-	private(set) var legacySocksProxyHost: String = "127.0.0.1"
-	var legacySocksProxyPortInputEnabled: Bool {
-		return legacySocksProxyEnabled
-	}
-	private(set) var legacySocksProxyPort: UInt16 = 8889
-	private(set) var newHttpProxyEnabled = true
-	var newHttpProxyHostInputEnabled: Bool {
-		return newHttpProxyEnabled
-	}
-	private(set) var newHttpProxyHost: String = "127.0.0.1"
-	var newHttpProxyPortInputEnabled: Bool {
-		return newHttpProxyEnabled
-	}
-	private(set) var newHttpProxyPort: UInt16 = 9090
-	private(set) var newSocksProxyEnabled = true
-	var newSocksProxyHostInputEnabled: Bool {
-		return legacySocksProxyEnabled
-	}
-	private(set) var newSocksProxyHost: String = "127.0.0.1"
-	var newSocksProxyPortInputEnabled: Bool {
-		return legacySocksProxyEnabled
-	}
-	private(set) var newSocksProxyPort: UInt16 = 8889
-	var saveProxySettingsButtonTitle: String {
-		"Save Proxy Settings"
-	}
-	var connectButtonTitle: String {
-		webSocketManager.isConnected ? "Disconnect" : "Connect"
-	}
-	private(set) var textViewText: String = "WebSocket traffic will appear here...\n"
+    private(set) var legacyHttpProxyHost = ""
+	private(set) var legacyHttpProxyPort: UInt16?
+    private(set) var legacyHttpsProxyHost = ""
+	private(set) var legacyHttpsProxyPort: UInt16?
+    private(set) var legacySocksProxyHost = ""
+	private(set) var legacySocksProxyPort: UInt16?
+    private(set) var newHttpProxyHost = ""
+	private(set) var newHttpProxyPort: UInt16?
+    private(set) var newSocksProxyHost = ""
+	private(set) var newSocksProxyPort: UInt16?
+    private(set) var authenticationMethod: String?
+    private(set) var authenticationUsername = ""
+    private(set) var authenticationPassword = ""
+    var connectButtonText: String {
+        webSocketManager.isConnected ? "Disconnect" : "Connect"
+    }
+	private(set) var textViewText: String = textViewPlaceholderText
+    var clearButtonIsVisible: Bool {
+        !textViewText.isEmpty && textViewText != textViewPlaceholderText
+    }
 	var messageInputIsEnabled: Bool {
 		webSocketManager.isConnected
 	}
@@ -107,84 +69,130 @@ class ViewModel {
 	}
 	
     func saveProxySettings(overrideOsProxySettingsEnabled: Bool, host: String,
-                           legacyHttpProxyEnabled: Bool, legacyHttpProxyHost: String, legacyHttpProxyPort: UInt16,
-						   legacyHttpsProxyEnabled: Bool, legacyHttpsProxyHost: String, legacyHttpsProxyPort: UInt16,
-						   legacySocksProxyEnabled: Bool, legacySocksProxyHost: String, legacySocksProxyPort: UInt16,
-						   newHttpProxyEnabled: Bool, newHttpProxyHost: String, newHttpProxyPort: UInt16,
-						   newSocksProxyEnabled: Bool, newSocksProxyHost: String, newSocksProxyPort: UInt16) {
+                           legacyHttpProxyHost: String, legacyHttpProxyPort: UInt16?,
+						   legacyHttpsProxyHost: String, legacyHttpsProxyPort: UInt16?,
+						   legacySocksProxyHost: String, legacySocksProxyPort: UInt16?,
+						   newHttpProxyHost: String, newHttpProxyPort: UInt16?,
+						   newSocksProxyHost: String, newSocksProxyPort: UInt16?,
+                           authenticationMethod: String?, credentialsUsername: String, credentialsPassword: String) {
         self.overrideOsProxySettingsCheckboxIsChecked = overrideOsProxySettingsEnabled
         self.hostInputText = host
         
-		self.legacyHttpProxyEnabled = legacyHttpProxyEnabled
 		self.legacyHttpProxyHost = legacyHttpProxyHost
 		self.legacyHttpProxyPort = legacyHttpProxyPort
 		
-		self.legacyHttpsProxyEnabled = legacyHttpsProxyEnabled
 		self.legacyHttpsProxyHost = legacyHttpsProxyHost
 		self.legacyHttpsProxyPort = legacyHttpsProxyPort
 		
-		self.legacySocksProxyEnabled = legacySocksProxyEnabled
 		self.legacySocksProxyHost = legacySocksProxyHost
 		self.legacySocksProxyPort = legacySocksProxyPort
 		
-		self.newHttpProxyEnabled = newHttpProxyEnabled
 		self.newHttpProxyHost = newHttpProxyHost
 		self.newHttpProxyPort = newHttpProxyPort
 		
-		self.newSocksProxyEnabled = newSocksProxyEnabled
 		self.newSocksProxyHost = newSocksProxyHost
 		self.newSocksProxyPort = newSocksProxyPort
-		
+        
+        self.authenticationMethod = authenticationMethod
+        self.authenticationUsername = credentialsUsername
+        self.authenticationPassword = credentialsPassword
+        
 		webSocketManager.proxyConfigurations = buildProxyConfigurations()
 		webSocketManager.connectionProxyDictionary = buildConnectionProxyDictionary()
+        webSocketManager.authenticationCredential = buildAuthenticationCredential()
+        webSocketManager.authenticationMethod = buildAuthenticationMethod()
 	}
 	
 	func buildConnectionProxyDictionary() -> [AnyHashable: Any]? {
 		guard overrideOsProxySettingsCheckboxIsChecked else { return nil }
-        guard legacySocksProxyEnabled || legacyHttpProxyEnabled || legacyHttpsProxyEnabled else { return nil }
+        let legacyHttpProxyIsEnabled = !legacyHttpProxyHost.isEmpty && legacyHttpProxyPort != nil
+        let legacyHttpsProxyIsEnabled = !legacyHttpsProxyHost.isEmpty && legacyHttpsProxyPort != nil
+        let legacySocksProxyIsEnabled = !legacySocksProxyHost.isEmpty && legacySocksProxyPort != nil
+        guard legacyHttpProxyIsEnabled || legacyHttpsProxyIsEnabled || legacySocksProxyIsEnabled else { return nil }
+        
+        var connectionProxyDictionary: [AnyHashable: Any] = [:]
+        
+        if legacyHttpProxyIsEnabled {
+            connectionProxyDictionary[kCFNetworkProxiesHTTPEnable] = 1
+            connectionProxyDictionary[kCFNetworkProxiesHTTPProxy] = legacyHttpProxyHost
+            connectionProxyDictionary[kCFNetworkProxiesHTTPPort] = legacyHttpProxyPort!
+        }
+        
+        if legacyHttpsProxyIsEnabled {
+            connectionProxyDictionary[kCFNetworkProxiesHTTPSEnable] = 1
+            connectionProxyDictionary[kCFNetworkProxiesHTTPSProxy] = legacyHttpsProxyHost
+            connectionProxyDictionary[kCFNetworkProxiesHTTPSPort] = legacyHttpsProxyPort!
+        }
+        
+        if legacySocksProxyIsEnabled {
+            connectionProxyDictionary[kCFNetworkProxiesSOCKSEnable] = 1
+            connectionProxyDictionary[kCFNetworkProxiesSOCKSProxy] = legacySocksProxyHost
+            connectionProxyDictionary[kCFNetworkProxiesSOCKSPort] = legacySocksProxyPort!
+        }
 
-		return [
-			// kCFProxyTypeKey: "",
-			
-			kCFNetworkProxiesSOCKSEnable: legacySocksProxyEnabled ? 1 : 0,
-			kCFNetworkProxiesSOCKSProxy: legacySocksProxyHost,
-			kCFNetworkProxiesSOCKSPort: legacySocksProxyPort,
-			
-			kCFNetworkProxiesHTTPEnable: legacyHttpProxyEnabled ? 1 : 0,
-			kCFNetworkProxiesHTTPProxy: legacyHttpProxyHost,
-			kCFNetworkProxiesHTTPPort: legacyHttpProxyPort,
-			
-			kCFNetworkProxiesHTTPSEnable: legacyHttpsProxyEnabled ? 1 : 0,
-			kCFNetworkProxiesHTTPSProxy: legacyHttpsProxyHost,
-			kCFNetworkProxiesHTTPSPort: legacyHttpsProxyPort,
-		]
+        return connectionProxyDictionary
 	}
 	
 	func buildProxyConfigurations() -> [ProxyConfiguration]? {
         guard overrideOsProxySettingsCheckboxIsChecked else { return nil }
-        guard newSocksProxyEnabled || newHttpProxyEnabled else { return nil }
+        let newSocksProxyIsEnabled = !newSocksProxyHost.isEmpty && newSocksProxyPort != nil
+        let newHttpProxyIsEnabled = !newHttpProxyHost.isEmpty && newHttpProxyPort != nil
+        guard newSocksProxyIsEnabled || newHttpProxyIsEnabled else { return nil }
 		
 		var proxyConfigurations: [ProxyConfiguration] = []
 		
-		if newSocksProxyEnabled {
+        if newSocksProxyIsEnabled, let ipAddress = IPv4Address(newSocksProxyHost), let port = NWEndpoint.Port(rawValue: newSocksProxyPort!) {
 			proxyConfigurations.append(
-				ProxyConfiguration(socksv5Proxy: NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(IPv4Address(newSocksProxyHost)!), port: NWEndpoint.Port(rawValue: newSocksProxyPort)!))
+				ProxyConfiguration(socksv5Proxy: NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(ipAddress), port: port))
 			)
 		}
 		
-		if newHttpProxyEnabled {
+        if newHttpProxyIsEnabled, let ipAddress = IPv4Address(newHttpProxyHost), let port = NWEndpoint.Port(rawValue: newHttpProxyPort!) {
 			proxyConfigurations.append(
-				ProxyConfiguration(httpCONNECTProxy: NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(IPv4Address(newHttpProxyHost)!), port: NWEndpoint.Port(rawValue: newHttpProxyPort)!))
+				ProxyConfiguration(httpCONNECTProxy: NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(ipAddress), port: port))
 			)
 		}
 		
 		return proxyConfigurations
 	}
 	
+    func buildAuthenticationCredential() -> URLCredential? {
+        guard !authenticationUsername.isEmpty && !authenticationPassword.isEmpty else { return nil }
+        return URLCredential(user: authenticationUsername, password: authenticationPassword, persistence: .forSession)
+    }
+    
+    func buildAuthenticationMethod() -> String? {
+        guard let authenticationMethod else { return nil }
+        
+        return switch authenticationMethod {
+            case "Basic":
+                NSURLAuthenticationMethodHTTPBasic
+            case "NTLM":
+                NSURLAuthenticationMethodNTLM
+            case "Negotiate":
+                NSURLAuthenticationMethodNegotiate
+            default:
+                nil
+        }
+    }
+    
+    func clearButtonPressed() {
+        textViewText = ""
+        delegate?.textViewTextChanged()
+    }
+    
 	func connectButtonPressed() {
 		if !webSocketManager.isConnected {
+            let newlinesCount = textViewText.filter({ $0 == "\n" }).count
+            if newlinesCount > 1 {
+                appendToTextView(text: "––––––––––––––––––––––––––––––")
+            }
+            else if newlinesCount == 1 {
+                textViewText = ""
+            }
+            
             guard let url = URL(string: hostInputText) else {
-                webSocketEventDidHappen(message: "Error: invalid URL \"\(hostInputText)\"")
+                appendToTextView(text: "Error: invalid URL \"\(hostInputText)\"")
                 return
             }
             webSocketManager.connect(url: url)
@@ -198,27 +206,31 @@ class ViewModel {
 		guard webSocketManager.isConnected else { return }
 		webSocketManager.sendMessage(message: message)
 	}
+    
+    
+    // MARK: Private Methods
+    
+    private func appendToTextView(text: String) {
+        var printLine = text
+        
+        if !textViewText.isEmpty && !printLine.hasPrefix("\n") {
+            printLine = "\n\(printLine)"
+        }
+        if !printLine.hasSuffix("\n") {
+            printLine = "\(printLine)\n"
+        }
+        
+        textViewText += printLine
+        delegate?.textViewTextChanged()
+    }
 }
 
 
 // MARK: - WebSocketManagerDelegate extension
 extension ViewModel: WebSocketManagerDelegate {
-	
 	func webSocketEventDidHappen(message: String) {
 		DispatchQueue.main.async(execute: { [weak self, message] in
-			guard let self else { return }
-            
-            var printLine = message
-            
-            if !printLine.hasPrefix("\n") {
-                printLine = "\n\(printLine)"
-            }
-            if !printLine.hasSuffix("\n") {
-                printLine = "\(printLine)\n"
-            }
-            
-			self.textViewText += printLine
-			self.delegate?.textViewTextChanged()
+            self?.appendToTextView(text: message)
 		})
 	}
 	

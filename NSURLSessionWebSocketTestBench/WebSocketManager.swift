@@ -25,6 +25,8 @@ class WebSocketManager: NSObject {
 	
 	var proxyConfigurations: [ProxyConfiguration]?
 	var connectionProxyDictionary: [AnyHashable: Any]?
+    var authenticationCredential: URLCredential?
+    var authenticationMethod: String?
 	var isConnected: Bool {
 		urlSession != nil && webSocketTask != nil
 	}
